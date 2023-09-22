@@ -19,7 +19,7 @@
 ## 画三角形需要做的几个步骤
 1. 编写自定义的顶点着色器和片段着色器
 2. 创建一个顶点缓冲对象(VBO)
-3. 把数据传输过程存储在顶点数组对象(VAO)中，用`glVertexAttribPointer()`告诉OpenGL该如何解析顶点数据
+3. 把数据传输过程存储在顶点数组对象(VAO)中，用`glVertexAttribPointer()`告诉OpenGL该如何解析顶点数据,OpenGL的核心模式要求我们使用VAO，所以它知道该如何处理我们的顶点输入。如果我们绑定VAO失败，OpenGL会拒绝绘制任何东西。
 4. 利用`glDrawArrays()`画出来
 ---
 ## 代码

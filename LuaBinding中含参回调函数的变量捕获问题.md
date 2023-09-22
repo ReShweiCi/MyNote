@@ -31,7 +31,7 @@ svr:get("/", function(req, res)
     end)
 svr:listen("127.0.0.1", 1234)
 ```
-一旦有客户端发送`GET"/"`请求即出错，后来通过输出`pLuaVM`的前后地址发现其地址不一致，得到错误原因为Lamda表达式中的按引用捕获
+一旦有客户端发送`GET"/"`请求即出错，后来通过输出`pLuaVM`的前后地址发现其地址不一致，如图
 ```C
 ETHER_API int EAPI_Network_HTTPServerGet(lua_State* pLuaVM)
 {
@@ -46,6 +46,10 @@ ETHER_API int EAPI_Network_HTTPServerGet(lua_State* pLuaVM)
 	return 0;
 }
 ```
+![](./Pictures/2023030503.png)
+得到错误原因为Lamda表达式中的按引用捕获
+
+
 原因很简单，<u><b>在回调函数被执行的时候，注册回调函数的函数早已执行完毕，其中的pLuaVM和refKey参数或变量早已被析构，故执行时出错</b></u>
 ## 结论
 - 将按引用捕获"&"改成赋值捕获"="即可避免变量被析构
