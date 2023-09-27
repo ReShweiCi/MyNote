@@ -84,7 +84,7 @@ else
 
 采用SDL_Net作为基础网络库进行了实现，这个库对Windows平台的TCP、UDP进行了简单的封装
 
-[TCPWarper.hpp](./Code/TCPWarper.hpp)
+[TCPWrapper.hpp](./Code/TCPWrapper.hpp)
 
 ## 参考
 * [TCP数据粘包的处理](https://subingwen.cn/linux/tcp-data-package/)

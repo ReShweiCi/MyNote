@@ -1,6 +1,6 @@
 ﻿#pragma once
 /*
-* A SDL_Net based TCP warper to solve sticky packet problem
+* A SDL_Net based TCP wrapper to solve sticky packet problem
 * 2023.09.27 by ReShweiCi
 */
 #include <SDL2/SDL.h>
@@ -11,25 +11,39 @@
 #define BUFFER_SIZE 1024
 #define HEADER_LENGTH sizeof(unsigned int)
 
-class TCPWarper
+class TCPWrapper
 {
 public:
-	TCPsocket m_ServerSocket;
-	TCPWarper(Uint16 port)
+	TCPsocket m_socket;
+	// create a server
+	TCPWrapper(Uint16 port)
 	{
 		IPaddress ip;
 		if (SDLNet_ResolveHost(&ip, NULL, port) == -1)
-			spdlog::error("Failed to resolve host, {}\n", SDLNet_GetError());
-		m_ServerSocket = SDLNet_TCP_Open(&ip);
-		if (m_ServerSocket)
-			spdlog::info("Success to create a server on port {}\n", port);
+			spdlog::error("Failed to resolve host, {}", SDLNet_GetError());
+		m_socket = SDLNet_TCP_Open(&ip);
+		if (m_socket)
+			spdlog::info("Success to create a server on port {}", port);
 		else
-			spdlog::error("Failed to start server, {}\n", SDLNet_GetError());
+			spdlog::error("Failed to start server, {}", SDLNet_GetError());
 	}
-	TCPWarper() = default;
-	~TCPWarper()
+	// create a client
+	TCPWrapper(const char* host, Uint16 port)
 	{
-		SDLNet_Quit();
+		IPaddress ip;
+		if (SDLNet_ResolveHost(&ip, host, port) == -1)
+			spdlog::error("Failed to resolve host, {}", SDLNet_GetError());
+		m_socket = SDLNet_TCP_Open(&ip);
+	}
+	~TCPWrapper()
+	{
+		while (!m_rawDataList.empty())
+		{
+			char* raw_data = m_rawDataList.front();
+			free(raw_data);
+			m_rawDataList.erase(m_rawDataList.begin());
+		}
+		SDLNet_TCP_Close(m_socket);
 	}
 	/*to solve TCP sticky packet problem*/
 	// construct the packet and send
