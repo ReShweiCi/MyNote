@@ -65,3 +65,64 @@ Mipmap也有以下过滤方式
 glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
 ```
 <b>注意，将放大过滤的选项设置为多级渐远纹理过滤选项之一没有任何效果，会产生`GL_INVALID_ENUM`错误代码</b>
+
+## 生成纹理
+
+使用stb_image库加载纹理，使用时需要新建一个C++源文件并输入
+
+```C++
+#define STB_IMAGE_IMPLEMENTATION
+#include "stb_image.h"
+```
+
+加载图片需要使用到`stbi_load`函数
+
+```C++
+int width, height, nrChannels;
+unsigned char *data = stbi_load("container.jpg", &width, &height, &nrChannels, 0);
+```
+
+纹理也使用ID引用，我们先生成纹理，再进行绑定，最后载入图片数据
+
+```C++
+unsigned int texture;
+glGenTextures(1, &texture);// 纹理数量，数组(也可以是单独的unsigned int)
+glBindTexture(GL_TEXTURE_2D, texture);
+glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, data);
+glGenerateMipmap(GL_TEXTURE_2D);// 生成Mipmap
+```
+
+* 第一个参数指定了纹理目标(Target)。设置为`GL_TEXTURE_2D`意味着会生成与当前绑定的纹理对象在同一个目标上的纹理（任何绑定到`GL_TEXTURE_1D`和`GL_TEXTURE_3D`的纹理不会受到影响）。
+* 第二个参数为纹理指定多级渐远纹理的级别，如果你希望单独手动设置每个多级渐远纹理的级别的话。这里我们填`0`，也就是基本级别。
+* 第三个参数告诉OpenGL我们希望把纹理储存为何种格式。我们的图像只有RGB值，因此我们也把纹理储存为`RGB`值。
+* 第四个和第五个参数设置最终的纹理的宽度和高度。我们之前加载图像的时候储存了它们，所以我们使用对应的变量。
+* 下个参数应该总是被设为`0`（历史遗留的问题）。
+* 第七第八个参数定义了源图的格式和数据类型。我们使用RGB值加载这个图像，并把它们储存为`char(byte)`数组，我们将会传入对应值。
+* 最后一个参数是真正的图像数据。
+  
+```C++
+unsigned int texture;
+glGenTextures(1, &texture);
+glBindTexture(GL_TEXTURE_2D, texture);
+// 为当前绑定的纹理对象设置环绕、过滤方式
+glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);   
+glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+// 加载并生成纹理
+int width, height, nrChannels;
+unsigned char *data = stbi_load("container.jpg", &width, &height, &nrChannels, 0);
+if (data)
+{
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, data);
+    glGenerateMipmap(GL_TEXTURE_2D);
+}
+else
+{
+    std::cout << "Failed to load texture" << std::endl;
+}
+stbi_image_free(data);
+```
+ 
+## 应用纹理
+
